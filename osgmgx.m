@@ -79,9 +79,6 @@ for i = 1:maxit + 1
    % Monotone oracle
    if norm(gtmp) < nrmg
        x = xtmp;
-       ngradeval = ngradeval + 1;
-   else
-       ngradeval = ngradeval + 2;
    end % End if
    
    if nrmg < info.tol
