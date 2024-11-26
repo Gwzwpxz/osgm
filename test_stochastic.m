@@ -19,8 +19,8 @@ sigmas = [1e-4, 1e-3, 1e-2, 1e-1];
 n_sigmas = length(sigmas);
 window_size = 200;
 
-% Prepare for subplots
 figure;
+t = tiledlayout(1, n_sigmas, 'TileSpacing', 'compact', 'Padding', 'compact');
 linewid = 3;
 
 function smoothed_data = moving_average(data, window_size)
@@ -84,8 +84,7 @@ for i = 1:n_sigmas
     fgx_smooth = moving_average(fgx, window_size);
     fhx_smooth = moving_average(fhx, window_size);
 
-    % Plot for this sigma
-    subplot(1, n_sigmas, i);
+    nexttile;
     semilogy(fvalsgd_smooth, 'LineWidth', linewid, 'DisplayName', 'SGD');
     hold on;
     semilogy(frx_smooth, 'LineWidth', linewid, 'DisplayName', 'OSGM-R');
@@ -99,16 +98,14 @@ for i = 1:n_sigmas
     set(gca, 'FontSize', 14, 'LineWidth', 1, 'Box', 'on');
 end
 
-% Add legend to the right side
-legend_handle = legend('SGD', 'OSGM-R', 'OSGM-G', 'OSGM-H', 'Location', 'eastoutside');
-set(legend_handle, 'FontSize', 12);
+lgd = legend(t.Children(1), 'SGD', 'OSGM-R', 'OSGM-G', 'OSGM-H', 'Location', 'eastoutside');
+set(lgd, 'FontSize', 12);
 
 set(gcf, 'Position', [0, 0, 1800, 400]);
 
 % saveas(gcf, 'stochastic_algorithms_plot.pdf');
 set(gcf, 'PaperUnits', 'inches');
-set(gcf, 'PaperPosition', [0 0 18 4]); % Figure dimensions
-set(gcf, 'PaperSize', [18 4]); % Match the figure size
+set(gcf, 'PaperPosition', [0 0 18 4]);
+set(gcf, 'PaperSize', [18 4]);
 
-% Export the plot as a high-resolution PDF
 print('stochastic_algorithms_plot', '-dpdf', '-r300');
