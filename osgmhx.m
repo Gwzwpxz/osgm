@@ -1,6 +1,6 @@
 function [x, fvals] = osgmhx(fx, gx, x0, info)
 % Online scaled gradient method with hypergradient surrogate
-% Wenzhi Gao, Stanford University
+% Wenzhi Gao, Adrien Specht, Stanford University
 %
 %  Input:   
 %     fx: function value oracle
@@ -12,6 +12,7 @@ function [x, fvals] = osgmhx(fx, gx, x0, info)
 %         P0: initial scaling matrix. Start from 0 if not specified
 %         adagradalpha: stepsize in AdaGrad
 %         tol: tolerance of gradient norm
+%         beta: momentum constant, 0 implies no momentum.
 % Output:
 %      x: last solution
 %  fvals: objectives
@@ -21,8 +22,10 @@ maxit = info.maxit;
 idiag = info.idiag;
 P = info.P0;
 adagradalpha = info.adagradalpha;
+beta = info.beta;
 
 x = x0;
+m = 0;
 n = length(x);    
 
 fvals = zeros(maxit, 1);
@@ -58,7 +61,8 @@ for i = 1:maxit + 1
    
    fvals(i + 1) = f;
    
-   xtmp = x - Pv(P, g);
+   m = beta * m + (1 - beta) * Pv(P, g);
+   xtmp = x - m;
    ftmp = fx(xtmp);
    gtmp = gx(xtmp);   
    

@@ -55,6 +55,7 @@ info.D = 1 / L;
 info.maxit = 10000;
 info.adagradalpha = 10;
 info.Hess = ATA;
+info.beta = 0;
 
 [xgd, fvalsgd] = pgrad(fx, gx, x0, info);
 info.D = dopt;
@@ -66,17 +67,26 @@ info.D = dopt;
 [xgx, fgx] = osgmgx(fx, gx, x0, info);
 [xada, fada] = adagrad(fx, gx, x0, info);
 
+info.beta = 0.8;
+[xrxm, frxm] = osgmrx(fx, gx, x0, info);
+[xhxm, fhxm] = osgmhx(fx, gx, x0, info);
+[xgxm, fgxm] = osgmgx(fx, gx, x0, info);
+
 linewid = 3;
 
 semilogy(fvalsgd, 'LineWidth', linewid, 'DisplayName', 'GD');
 hold on;
 semilogy(foptdiag, 'LineWidth', linewid, 'DisplayName', 'OptDiag');
-semilogy(frx, 'LineWidth', linewid, 'DisplayName', 'OSGM-R');
-semilogy(fgx, 'LineWidth', linewid, 'DisplayName', 'OSGM-G');
-semilogy(fhx, 'LineWidth', linewid, 'DisplayName', 'OSGM-H');
+h_frx = semilogy(frx, 'LineWidth', linewid, 'DisplayName', 'OSGM-R');
+h_fgx = semilogy(fgx, 'LineWidth', linewid, 'DisplayName', 'OSGM-G');
+h_fhx = semilogy(fhx, 'LineWidth', linewid, 'DisplayName', 'OSGM-H');
 semilogy(fnes, 'LineWidth', linewid, 'DisplayName', 'SAGD');
 semilogy(fnescvx, 'LineWidth', linewid, 'DisplayName', 'AGD');
 semilogy(fada, 'LineWidth', linewid, 'DisplayName', 'AdaGrad', 'LineStyle', ':');
+semilogy(frxm, 'LineWidth', linewid, 'Color', get(h_frx, 'Color'), 'LineStyle', '--', 'HandleVisibility', 'off');
+semilogy(fgxm, 'LineWidth', linewid, 'Color', get(h_fgx, 'Color'), 'LineStyle', '--', 'HandleVisibility', 'off');
+semilogy(fhxm, 'LineWidth', linewid, 'Color', get(h_fhx, 'Color'), 'LineStyle', '--', 'HandleVisibility', 'off');
+semilogy(NaN, NaN, 'LineWidth', linewid, 'Color', 'k', 'LineStyle', '--', 'DisplayName', 'Momentum');
 legend();
 
 set(gcf,'Position',[200 200 600 400])

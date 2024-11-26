@@ -1,6 +1,6 @@
 function [x, fvals] = osgmgx(fx, gx, x0, info)
 % Online scaled gradient method with gradient norm surrogate. Only for fixed Hessian
-% Wenzhi Gao, Stanford University
+% Wenzhi Gao, Adrien Specht, Stanford University
 %
 %  Input:   
 %     fx: function value oracle
@@ -13,6 +13,7 @@ function [x, fvals] = osgmgx(fx, gx, x0, info)
 %         adagradalpha: stepsize in AdaGrad
 %         tol: tolerance of gradient norm
 %         Hess: fixed Hessian matrix
+%         beta: momentum constant, 0 implies no momentum.
 % Output:
 %      x: last solution
 %  fvals: objectives
@@ -24,8 +25,10 @@ P = info.P0;
 % Hessian is considered fixed
 H = info.Hess;
 adagradalpha = info.adagradalpha;
+beta = info.beta;
 
 x = x0;
+m = 0;
 n = length(x);    
 
 fvals = zeros(maxit, 1);
@@ -60,8 +63,9 @@ for i = 1:maxit + 1
    nrmg = norm(g);
    
    fvals(i + 1) = f;
-   
-   xtmp = x - Pv(P, g);
+
+   m = beta * m + (1 - beta) * Pv(P, g);
+   xtmp = x - m;
    gtmp = gx(xtmp);   
    
    if idiag
