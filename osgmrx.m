@@ -1,6 +1,6 @@
 function [x, fvals] = osgmrx(fx, gx, x0, info)
 % Online scaled gradient method with ratio surrogate and lower bound
-% Wenzhi Gao, Stanford University
+% Wenzhi Gao, Adrien Specht, Stanford University
 %
 %  Input:   
 %     fx: function value oracle
