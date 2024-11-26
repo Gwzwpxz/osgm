@@ -1,6 +1,6 @@
 function [x, fvals] = osgmhx(fx, gx, x0, info)
 % Online scaled gradient method with hypergradient surrogate
-% Wenzhi Gao, Stanford University
+% Wenzhi Gao, Adrien Specht, Stanford University
 %
 %  Input:   
 %     fx: function value oracle
