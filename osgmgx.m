@@ -1,6 +1,6 @@
 function [x, fvals] = osgmgx(fx, gx, x0, info)
 % Online scaled gradient method with gradient norm surrogate. Only for fixed Hessian
-% Wenzhi Gao, Stanford University
+% Wenzhi Gao, Adrien Specht, Stanford University
 %
 %  Input:   
 %     fx: function value oracle
