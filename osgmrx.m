@@ -13,6 +13,7 @@ function [x, fvals] = osgmrx(fx, gx, x0, info)
 %         P0: initial scaling matrix. Start from 0 if not specified
 %         adagradalpha: stepsize in AdaGrad
 %         tol: tolerance of gradient norm
+%         beta: momentum constant, 0 implies no momentum.
 % Output:
 %      x: last solution
 %  fvals: objectives
@@ -23,8 +24,10 @@ idiag = info.idiag;
 P = info.P0;
 z = info.z;
 adagradalpha = info.adagradalpha;
+beta = info.beta;
 
 x = x0;
+m = 0;
 n = length(x);    
 
 fvals = zeros(maxit, 1);
@@ -70,7 +73,8 @@ for i = 1:maxit + 1
        z = f - min((z - f) * 1e-02, 1);
    end % End if
    
-   xtmp = x - Pv(P, g);
+   m = beta * m + (1 - beta) * Pv(P, g);
+   xtmp = x - m;
    ftmp = fx(xtmp);
    gtmp = gx(xtmp);   
    
