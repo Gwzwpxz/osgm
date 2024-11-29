@@ -19,8 +19,6 @@ sigmas = [1e-4, 1e-3, 1e-2, 1e-1];
 n_sigmas = length(sigmas);
 window_size = 200;
 
-figure;
-t = tiledlayout(1, n_sigmas, 'TileSpacing', 'compact', 'Padding', 'compact');
 linewid = 3;
 
 function smoothed_data = moving_average(data, window_size)
@@ -84,7 +82,8 @@ for i = 1:n_sigmas
     fgx_smooth = moving_average(fgx, window_size);
     fhx_smooth = moving_average(fhx, window_size);
 
-    nexttile;
+    % Create figure for this sigma
+    figure;
     semilogy(fvalsgd_smooth, 'LineWidth', linewid, 'DisplayName', 'SGD');
     hold on;
     semilogy(frx_smooth, 'LineWidth', linewid, 'DisplayName', 'OSGM-R');
@@ -96,16 +95,14 @@ for i = 1:n_sigmas
     xlim([1, length(fvalsgd_smooth)]);
     grid on;
     set(gca, 'FontSize', 14, 'LineWidth', 1, 'Box', 'on');
+    legend('SGD', 'OSGM-R', 'OSGM-G', 'OSGM-H', 'Location', 'northeast', 'FontSize', 12);
+
+    % Set figure properties and save
+    set(gcf, 'Position', [100, 100, 800, 600]); % Adjust as needed
+    set(gcf, 'PaperUnits', 'inches');
+    set(gcf, 'PaperPosition', [0 0 8 6]);
+    set(gcf, 'PaperSize', [8 6]);
+
+    savefile = sprintf('stochastic_algorithms_sigma_%5.4f.pdf', sigma);
+    print(savefile, '-dpdf', '-r300');
 end
-
-lgd = legend(t.Children(1), 'SGD', 'OSGM-R', 'OSGM-G', 'OSGM-H', 'Location', 'eastoutside');
-set(lgd, 'FontSize', 12);
-
-set(gcf, 'Position', [0, 0, 1800, 400]);
-
-% saveas(gcf, 'stochastic_algorithms_plot.pdf');
-set(gcf, 'PaperUnits', 'inches');
-set(gcf, 'PaperPosition', [0 0 18 4]);
-set(gcf, 'PaperSize', [18 4]);
-
-print('stochastic_algorithms_plot', '-dpdf', '-r300');
