@@ -1,5 +1,5 @@
-function [x, fvals] = osgmgx(fx, gx, x0, info)
-% Online scaled gradient method with gradient norm surrogate. Only for fixed Hessian
+function [x, fvals] = osgmhxm(fx, gx, x0, info)
+% Online scaled gradient method with hypergradient surrogate
 % Wenzhi Gao, Stanford University
 %
 %  Input:   
@@ -12,7 +12,6 @@ function [x, fvals] = osgmgx(fx, gx, x0, info)
 %         P0: initial scaling matrix. Start from 0 if not specified
 %         adagradalpha: stepsize in AdaGrad
 %         tol: tolerance of gradient norm
-%         Hess: fixed Hessian matrix
 % Output:
 %      x: last solution
 %  fvals: objectives
@@ -21,8 +20,6 @@ function [x, fvals] = osgmgx(fx, gx, x0, info)
 maxit = info.maxit;
 idiag = info.idiag;
 P = info.P0;
-% Hessian is considered fixed
-H = info.Hess;
 adagradalpha = info.adagradalpha;
 
 x = x0;
@@ -44,7 +41,7 @@ else
     Pv = @(P, g) P * g;
 end % End if
 
-% Adagrad as online algorithm
+% AdaGrad as online algorithm
 if idiag 
     G = zeros(n, 1);
 else
@@ -52,6 +49,12 @@ else
 end % End if
 
 ngradeval = 0;
+
+% Initialize momentum parameter
+beta = 0.0;
+% Also use AdaGrad as online algorithm
+Gm = 0;
+xold = x;
 
 for i = 1:maxit + 1
     
@@ -61,24 +64,38 @@ for i = 1:maxit + 1
    
    fvals(i + 1) = f;
    
-   xtmp = x - Pv(P, g);
-   gtmp = gx(xtmp);   
+   xtmp = x - Pv(P, g) + beta .* (x - xold);
+   ftmp = fx(xtmp);
+   gtmp = gx(xtmp);     
    
    if idiag
        % Diagonal update
-       gr = - ((H * gtmp) .* g) / (norm(g) * norm(gtmp));
+       gr = - (gtmp .* g) / nrmg^2;
        G = G + gr.^2;
        P = P - adagradalpha * gr ./ sqrt(G + 1e-20);
    else
        % Full matrix update
-       gr = - ((H * gtmp) * g') / (norm(g) * norm(gtmp));
+       gr = - (gtmp * g') / nrmg^2;
        G = G + gr.^2;
        P = P - adagradalpha * gr ./ sqrt(G + 1e-20);
-   end % End if
+   end % End if 
+   
+   % Momentum update
+   gm = (gtmp' * (x - xold)) / nrmg^2;
+   Gm = Gm + gm.^2;
+   % betas(i) = beta;
+   beta = beta - 100 * gm ./ sqrt(Gm + 1e-20);
+   beta = min(beta, 1.0);
+   beta = max(beta, -1.0);
+   
+   xold = x;
    
    % Monotone oracle
-   if norm(gtmp) < nrmg
+   if ftmp < f
        x = xtmp;
+       ngradeval = ngradeval + 1;
+   else
+       ngradeval = ngradeval + 2;
    end % End if
    
    if nrmg < info.tol

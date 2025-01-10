@@ -16,13 +16,13 @@ fvals = zeros(maxit, 1);
 
 for i = 1:maxit
     
-    fvals(i) = fx(x);
+    fvals(i) = fx(y);
     g = gx(x);
     
     ynew = x - (1/L) * g;
     x = (1 + theta) * ynew - theta * y;
     y = ynew;
-    
+
     nrmg = norm(gx(y));
     
     if nrmg < info.tol
