@@ -53,7 +53,14 @@ class Adam(Optimizer):
         beta1 = self.params.get(ALG_ADAM_BETA1, 0.9)
         beta2 = self.params.get(ALG_ADAM_BETA2, 0.999)
         eps = self.params.get(ALG_ADAM_EPSILON, 1e-08)
-        lr = self.params.get(ALG_ADAM_LEARNING_RATE, 0.1)
+        lr = self.params.get(ALG_ADAM_LEARNING_RATE, -1)
+        L_est = self.params.get(ALG_UNIVERSAL_PARAM_L_EST, np.inf)
+        
+        if L_est != np.inf and lr == -1:
+            lr = 1.0 / L_est
+        
+        if lr == -1:
+            lr = 1.0
 
         # Counters
         n_func_evals = 0

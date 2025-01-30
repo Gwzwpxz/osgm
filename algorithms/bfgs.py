@@ -90,6 +90,14 @@ class SciPyBFGS(Optimizer):
         fvals = np.pad(fvals, (0, max_iter - len(fvals)), mode='edge')
         gnorms = np.pad(gnorms, (0, max_iter - len(gnorms)), mode='edge')
 
+        n_fev = res.nfev
+        n_jev = res.njev
+        
+        if not res.success or np.min(gnorms) > 1.1 * tol:
+            n_iter = max_iter
+            n_fev = max_iter
+            n_jev = max_iter
+            
         # Construct stats dictionary
         stats = {
             ALG_STATS_ITERATIONS: n_iter,
@@ -98,8 +106,8 @@ class SciPyBFGS(Optimizer):
             ALG_STATS_RUNNING_TIME: 0,  # placeholder if timing is desired
             ALG_STATS_FUNCVALS: fvals,
             ALG_STATS_GNORMS: gnorms,
-            ALG_STATS_FEVALS: res.nfev,  # function evaluations from SciPy
-            ALG_STATS_GEVALS: res.njev,  # gradient evaluations from SciPy
+            ALG_STATS_FEVALS: n_fev,  # function evaluations from SciPy
+            ALG_STATS_GEVALS: n_jev,  # gradient evaluations from SciPy
         }
 
         self.stats = stats
