@@ -3,7 +3,7 @@ import scipy.sparse as sp
 try:
     import pycutest
 except:
-    print("cuTEST not installed")
+    pass
 from typing import Tuple
 from sklearn.datasets import load_svmlight_file
 

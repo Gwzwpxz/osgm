@@ -8,7 +8,9 @@ To reproduce the experiments in the paper,
 
 2. Download datasets from [LIBSVM](https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary.html). Check the list at the end for benchmark files.
 
-3. Execute the following commands
+3. Place the datasets in `problems` directory
+
+4. Execute the following commands
 
    ```
    chmod +x ./*.sh
@@ -37,6 +39,7 @@ To reproduce the experiments in the paper,
    ================================================
    ```
 
+and figures will be saved in `figures` directory.
 
 **Tested LIBSVM instances**
 

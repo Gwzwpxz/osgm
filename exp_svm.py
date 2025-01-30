@@ -22,7 +22,7 @@ from algorithms.algo_config import *
 from algorithms.hypertuner import HyperGrid
 
 # Load the dataset
-from problems.def_problems import read_smoothed_svm_problem_from_libsvm
+from def_problems import read_smoothed_svm_problem_from_libsvm
 
 from utils import plot_descent_curves, plot_dummy_lgd
 
@@ -160,7 +160,7 @@ if __name__ == "__main__":
                             legend_loc="upper right",
                             ylabel="Function value gap",
                             title=f"{data_name}",
-                            fname=f"{data_name}_objval_svm.pdf")
+                            fname=os.path.join(".", "figures", f"{data_name}_objval_svm.pdf"))
         
         # Gradient norm
         alg_descent_curves = {algo: alg_list[algo][4][ALG_STATS_GNORMS] for algo in alg_list.keys()}
@@ -169,5 +169,5 @@ if __name__ == "__main__":
                             legend_loc="upper right",
                             ylabel="Gradient Norm",
                             title=f"{data_name}",
-                            fname=f"{data_name}_gnorm_svm.pdf")
+                            fname=os.path.join(".", "figures", f"{data_name}_gnorm_svm.pdf"))
         
