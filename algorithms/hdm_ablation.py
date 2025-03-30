@@ -3,19 +3,7 @@ from algo_config import *
 import numpy as np
 
 """
-Notes on algorithm tuning
-
-There are several important factors that affect algorithm performance.
-
-1. Scalar or diagonal candidate set for stepsize and momentum
-2. AdaGrad learning rate for {P_k} and {\beta_k}
-3. Dynamic curvature estimation
-    Number of curvature estimates to collect
-    How to estimate the curvature
-    How to use the curvature estimation: mean or geometric mean
-4. Momentum initialization strategy: 0 or 0.95 for different candidate sets
-    Range of momentum clipping for different candidate sets
-5. Whether to reset momentum to 0 when a null step is taken
+Ablation version for hypergradient descent
 
 """
 
@@ -61,7 +49,8 @@ class HyperGradientDescent(Optimizer):
         tol = self.params.get(ALG_UNIVERSAL_PARAM_TOL, 1e-06)
         max_iter = self.params.get(ALG_UNIVERSAL_PARAM_MAXITER, 1000)
         is_log = self.params.get(ALG_HDM_LOGGING, False)
-        is_convex = not self.params.get(ALG_HDM_NONCONVEX, True)
+        use_null = self.params.get(ALG_HDM_NULLSTEP, True)
+        use_ogd = self.params.get(ALG_HDM_ONLINE_GD, False)
         
         # Note 1. Scalar or diagonal candidate set for stepsize and momentum
         version = self.params.get(ALG_HDM_LR_VERSION, ALG_HDM_VERSION_DIAG)
@@ -79,7 +68,7 @@ class HyperGradientDescent(Optimizer):
         n_monotone_step = 0
         
         if L_est != np.inf and lr == -1: 
-            lr = 10.0 / L_est if is_convex else 2.0 / L_est
+            lr = 10.0 / L_est
         
         if lr == -1:
             lr = 0.1
@@ -166,56 +155,31 @@ class HyperGradientDescent(Optimizer):
                 gnorm_eps = 0.25 * diff_norm_sqr * L_est ** 2
             else:   
                 gnorm_eps = 1e-12
+                
+            # Update P
+            gr = - gtmp * gx / (grad_norm ** 2 + gnorm_eps)
+            G += gr ** 2
+            P -= lr * gr / (np.sqrt(G) + adagrad_eps) if not use_ogd else lr * gr
+            P = np.clip(P, 0.0 / L_est, 1e+10 / L_est)
             
-            # P_old = P
-            if version == ALG_HDM_VERSION_DIAG:
-                gr = - gtmp * gx / (grad_norm ** 2 + gnorm_eps)
-                # gr += omega * L_est * (P * gx * gx - beta * gx * (x - x_old)) / (grad_norm ** 2 + gnorm_eps)
-                G += gr ** 2
-                P -= lr * gr / (np.sqrt(G) + adagrad_eps)
-            elif version == ALG_HDM_VERSION_MATRIX:
-                gr = - np.outer(gtmp, gx) / (grad_norm ** 2 + gnorm_eps)
-                G += gr ** 2
-                P -= lr * gr / (np.sqrt(G) + adagrad_eps)
-            elif version == ALG_HDM_VERSION_SCALAR:
-                gr = - np.dot(gtmp, gx) / (grad_norm ** 2 + gnorm_eps)
-                G += gr ** 2
-                P -= lr * gr / (np.sqrt(G) + adagrad_eps)
-            else:
-                raise ValueError("Unknown version of hypergradient descent")
+            # Update beta
+            gm = (np.dot(gtmp, x - x_old)) / (grad_norm ** 2 + gnorm_eps)
+            Gm += gm ** 2
+            beta -= beta_lr * gm / (np.sqrt(Gm) + adagrad_eps)
+            beta = min(max(beta, 0.0), 0.9995)
             
-            if is_convex:
-                P = np.clip(P, 0.0 / L_est, 1e+10 / L_est)
-
-            if beta_version == ALG_HDM_VERSION_DIAG:
-                gm = gtmp * (x - x_old) / (grad_norm ** 2 + gnorm_eps)
-                Gm += gm ** 2
-                beta -= beta_lr * gm / (np.sqrt(Gm) + adagrad_eps)
-                beta = np.clip(beta, 0.0, 0.9995)
-            else:
-                gm = (np.dot(gtmp, x - x_old)) / (grad_norm ** 2 + gnorm_eps)
-                # gm += omega * L_est * (beta * diff_norm_sqr - np.dot(x - x_old, P_old * gx)) / (grad_norm ** 2 + gnorm_eps)
-                Gm += gm ** 2
-                beta -= beta_lr * gm / (np.sqrt(Gm) + adagrad_eps)
-                beta = min(max(beta, 0.0), 0.9995)
-            
-            if n_iter % 100 == 99 and not is_guessed:
-                if is_convex:
-                    lr = np.maximum(lr * 0.8, lr_orig * 1e-03)
-                    beta *= 0.0
-                else:
-                    lr = np.maximum(lr * 0.05, lr_orig * 1e-02)
+            if n_iter % 50 == 49 and not is_guessed:
+                lr = np.maximum(lr * 0.8, lr_orig * 1e-03)
             
             # Note 5. Whether to reset momentum to 0 when a null step is taken (No)
             x_old = x
-            if ftmp < fx:
+            if ftmp < fx or not use_null:
                 # Note 3-2. How to estimate the curvature (Using the ratio)
                 diff_norm = np.linalg.norm(xtmp - x)
                 if diff_norm > 1e-03:
                     curve_est = np.linalg.norm(gtmp - gx) / diff_norm
                     L_guesses.append(curve_est)
 
-                # curve_est = 0.5 * (grad_norm ** 2) / (fx - ftmp)
                 x = xtmp
                 fx = ftmp
                 gx = gtmp

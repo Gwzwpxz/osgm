@@ -34,6 +34,16 @@ ALG_ADAM_LEARNING_RATE = "ADAM LEARNING RATE"
 # BFGS memory size
 ALG_LBFGS_MEMORY_SIZE = "L-BFGS MEMORY SIZE"
 
+# ADP GD parameters
+ALG_ADP_GD_EPS = "EPS"
+ALG_ADP_GD_LR0 = "LR0"
+
+# ADP GDACC parameters
+ALG_ADP_GDACC_ALR = "ALR"
+ALG_ADP_GDACC_AMU = "AMU"
+ALG_ADP_GDACC_BLR = "BLR"
+ALG_ADP_GDACC_BMU = "BMU"
+
 # Hypergradient descent 
 ALG_HDM_NONCONVEX = "HDM NONCONVEX"
 ALG_HDM_LEARNING_RATE = "HDM LEARNING RATE"
@@ -47,6 +57,10 @@ ALG_HDM_VERSION_MATRIX = "HDM MATRIX VERSION"
 ALG_HDM_VERSION_SCALAR = "HDM SCALAR VERSION"
 ALG_HDM_LOGGING = "HDM LOGGING"
 
+# Ablation parameters
+ALG_HDM_NULLSTEP = "HDM NULLSTEP"
+ALG_HDM_ONLINE_GD = "HDM ONLINE GD"
+
 # Configuration of the optimization algorithms
 gradient_descent_params = {
     ALG_UNIVERSAL_PARAM_NAME: "Gradient Descent",
@@ -56,6 +70,8 @@ gradient_descent_params = {
     ALG_UNIVERSAL_PARAM_MU_EST: 0,
     ALG_UNIVERSAL_PARAM_OPTVAL: -inf
 }
+
+gradient_descent_ls_params = gradient_descent_params.copy()
 
 gradient_descent_heavy_ball_params = {
     ALG_UNIVERSAL_PARAM_NAME: "Gradient Descent with Momemtum",
@@ -84,6 +100,8 @@ accelerated_gradient_descent_cvx_params = {
     ALG_UNIVERSAL_PARAM_MU_EST: 0,
     ALG_UNIVERSAL_PARAM_OPTVAL: -inf
 }
+
+accelearted_gradient_descent_cvx_ls_params = accelerated_gradient_descent_cvx_params.copy()
 
 adagrad_params = {
     ALG_UNIVERSAL_PARAM_NAME: "AdaGrad",
@@ -128,6 +146,31 @@ lbfgs_params = {
     ALG_LBFGS_MEMORY_SIZE: 2
 }
 
+adpgd_params = {
+    ALG_UNIVERSAL_PARAM_NAME: "Gradient Descent without Descent",
+    ALG_UNIVERSAL_PARAM_MAXITER: 1000,
+    ALG_UNIVERSAL_PARAM_TOL: 1e-06,
+    ALG_UNIVERSAL_PARAM_L_EST: inf,
+    ALG_UNIVERSAL_PARAM_MU_EST: 0,
+    ALG_UNIVERSAL_PARAM_OPTVAL: -inf,
+    ALG_ADP_GD_EPS: 1e-10,
+    ALG_ADP_GD_LR0: 1e-03
+}
+
+adpgd_acc_params = {
+    ALG_UNIVERSAL_PARAM_NAME: "Accelerated Gradient Descent without Descent",
+    ALG_UNIVERSAL_PARAM_MAXITER: 1000,
+    ALG_UNIVERSAL_PARAM_TOL: 1e-06,
+    ALG_UNIVERSAL_PARAM_L_EST: inf,
+    ALG_UNIVERSAL_PARAM_MU_EST: 0,
+    ALG_UNIVERSAL_PARAM_OPTVAL: -inf,
+    ALG_ADP_GDACC_ALR: 0.5,
+    ALG_ADP_GDACC_AMU: 0.5,
+    ALG_ADP_GDACC_BLR: 0.5,
+    ALG_ADP_GDACC_BMU: 0.5
+    
+}
+
 hdm_params = {
     ALG_UNIVERSAL_PARAM_NAME: "Hypergradient descent method",
     ALG_UNIVERSAL_PARAM_MAXITER: 1000,
@@ -140,7 +183,9 @@ hdm_params = {
     ALG_HDM_LR_VERSION: ALG_HDM_VERSION_DIAG,
     ALG_HDM_BETA_VERSION: ALG_HDM_VERSION_DIAG,
     ALG_HDM_LOGGING: False,
-    ALG_HDM_NONCONVEX: False
+    ALG_HDM_NONCONVEX: False,
+    ALG_HDM_NULLSTEP: True, # Whether to use null step. Always set to True unless in ablation
+    ALG_HDM_ONLINE_GD: False  # Whether to use online gradient descent. Always set to False unless in ablation
 }
 
 if __name__ == "__main__":
